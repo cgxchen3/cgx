@@ -1,0 +1,96 @@
+﻿Dim TableDoc
+Dim j
+Dim ctr
+Dim category
+Dim stat
+Dim Table
+Dim banner
+Dim k
+Dim TDMF
+Dim SideAxis
+Dim SubAxis
+Dim Element
+
+    Set TableDoc = CreateObject("TOM.Document")
+    TableDoc.LogFilePath = "C:\Work\Support\Dev\20151019_Ipsos_Ferrero_Performance\t6654_Investigation\Output"
+    TableDoc.KeepLogFiles = True
+
+    TableDoc.DataSet.Load("5_Ferrero_M2_DIP1_LocalOEs_recoded_v2.mdd", "", "C:\Work\Support\Dev\20151019_Ipsos_Ferrero_Performance\5_Ferrero_M2_DIP1_LocalOEs_recoded_v2.ddf", "mrDataFileDSC")
+
+' Ipsos script
+'	For Each j in TDMF["Loop_TV_Campains_"+Category].fields["Loop_BOARD_Ads"].fields["marker_"+ctr+"_BOARD_"+Category+"_Q19Filt"].Categories
+'		k="Loop_TV_Campains_"+Category+".Loop_BOARD_Ads.Q19"+Category+".Q19"+category+"_scale{b 'Base: Recognizers of at least one TP of the campaign' base (),"
+'
+'		For Each stat In TDMF["Loop_TV_Campains_"+Category].fields["Loop_BOARD_Ads"].fields["Q19"+category].categories
+'			k=k+"b"+CText(stat)+" base ('levelID={"+CText(stat)+"} AND Q19"+category+"_scale') [IsHidden=True],n"+ctext(stat)+" '"+TDMF["Loop_TV_Campains_"+Category].fields["Loop_BOARD_Ads"].fields["Q19"+Category].Categories.Item[CText(stat)].label+" ' expression('Q19"+category+"_scale*{_3} and levelID={"+CText(stat)+"}'),"
+'		Next
+'		k=left(k,len(k)-1) + "}"
+'
+'		.AddNew("t"+Ctext(.count+1),k+"*"+ban[i],"Q19BOARD. SUMMARY STRONGLY AGREE CAMPAIGN DIAGNOSTIC - "+TDMF["Loop_TV_Campains_"+Category].fields["Loop_BOARD_Ads"].fields["marker_"+ctr+"_BOARD_"+Category+"_Q19Filt"].Categories.Item[CText(j)].label)
+'		.Item[.count-1].Axes["Side"].SubAxes[..].Label=" "
+'		.Item[.count-1].Filters.AddNew("f1"+ctext(j),"marker_"+ctr+"_BOARD_"+Category+"_Q19Filt*{"+ctext(j)+"}","Recognizers of at least one TP of the campaign","Loop_TV_Campains_"+Category+".Loop_BOARD_Ads")
+'		.Item[.count-1].level = "HDATA"
+'		.Item[.count-1].Rules.AddNew()
+'	next
+
+' Adapted
+    TableDoc.Global.Filters.AddNew("fmain_sample", "flag*{_1,_2}"," ")
+    TableDoc.Global.Filters.AddNew("fBreakfast", "S11_variable_categories*{_4}"," ")	
+    TableDoc.Global.Filters.AddNew("fGlobal", "QCountry*{_1}"," ")	
+    
+    Set TDMF = tabledoc.DataSet.MdmDocument.fields
+    ctr = "ITA"
+    Category = "BR"
+	banner="QCountry{b 'Base' base() [ishidden=True],unweightedbase()[ishidden=True],n1 'Total' expression('QCountry Is Not Null')}''+_
+			Wave_Month{b 'Base' base() [ishidden=True],unweightedbase()[ishidden=True],..,c5 [IsHidden=True],c6 [IsHidden=True],c7 [IsHidden=True]}'MONTH' + _
+			Sessions{b 'Base' base() [ishidden=True],unweightedbase()[ishidden=True],..}'Sessions' + _
+			Week{b 'Base' base() [ishidden=True],unweightedbase()[ishidden=True],r1 '2013-2014' combine({_36,_37,_38,_39,_40,_41,_42,_43,_44,_45,_46,_47,_48,_49,_50,_51,_52,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,_17,_18,_19,_20,_21,_22,_23,_24,_25,_26,_27,_28,_29}),_
+																				r2 '2014-2015' expression('DIP*{_1,_2,_3}') } 'YEAR'+_
+			DIP{b 'Base' base() [ishidden=True],unweightedbase()[ishidden=True],_1}'DIPS'"
+
+
+    ' My adaptation of Ipsos's script to get it run standalone
+	For Each j in TDMF["Loop_TV_Campains_"+Category].fields["Loop_BOARD_Ads"].fields["marker_"+ctr+"_BOARD_"+Category+"_Q19Filt"].Categories
+		k="Loop_TV_Campains_"+Category+".Loop_BOARD_Ads.Q19"+Category+".Q19"+category+"_scale{b 'Base: Recognizers of at least one TP of the campaign' base (),"
+
+		For Each stat In TDMF["Loop_TV_Campains_"+Category].fields["Loop_BOARD_Ads"].fields["Q19"+category].categories
+			k=k+"b"+CText(stat)+" base ('levelID={"+CText(stat)+"} AND Q19"+category+"_scale') [IsHidden=True],n"+ctext(stat)+" '"+TDMF["Loop_TV_Campains_"+Category].fields["Loop_BOARD_Ads"].fields["Q19"+Category].Categories.Item[CText(stat)].label+" ' expression('Q19"+category+"_scale*{_3} and levelID={"+CText(stat)+"}'),"
+		Next
+		k=left(k,len(k)-1) + "}"
+
+		Set Table = TableDoc.Tables.AddNew("t6654", k+"*"+banner, "Q19BOARD. SUMMARY STRONGLY AGREE CAMPAIGN DIAGNOSTIC - "+TDMF["Loop_TV_Campains_"+Category].fields["Loop_BOARD_Ads"].fields["marker_"+ctr+"_BOARD_"+Category+"_Q19Filt"].Categories.Item[CText(j)].label)
+		Table.Axes["Side"].SubAxes[..].Label=" "
+		Table.Filters.AddNew("f1"+ctext(j), "marker_"+ctr+"_BOARD_"+Category+"_Q19Filt*{"+ctext(j)+"}","Recognizers of at least one TP of the campaign","Loop_TV_Campains_"+Category+".Loop_BOARD_Ads")
+		Table.level = "HDATA"
+		Table.Weight = "Weight_" + category
+		Table.Rules.AddNew()
+	Next
+
+    ' Improved version of Ipsos's script
+	For Each j in TDMF["Loop_TV_Campains_"+Category].fields["Loop_BOARD_Ads"].fields["marker_"+ctr+"_BOARD_"+Category+"_Q19Filt"].Categories
+    	Set Table = TableDoc.Tables.AddNew("t6654_Fast", "*"+banner, "Q19BOARD. SUMMARY STRONGLY AGREE CAMPAIGN DIAGNOSTIC - "+TDMF["Loop_TV_Campains_"+Category].fields["Loop_BOARD_Ads"].fields["marker_"+ctr+"_BOARD_"+Category+"_Q19Filt"].Categories.Item[CText(j)].label)
+        Set SideAxis = Table.Axes.AddNew("Side")
+        SideAxis.SubAxes.AddNew("Base", "Loop_TV_Campains_BR.Loop_BOARD_Ads.Q19BR.Q19BR_scale", "{b 'Base: Recognizers of at least one TP of the campaign' base (), _3 [IsHidden=True]}")
+    	For Each stat In TDMF["Loop_TV_Campains_"+Category].Fields["Loop_BOARD_Ads"].Fields["Q19"+category].Categories
+            Set SubAxis = SideAxis.SubAxes.AddNew(stat.Name, "Loop_TV_Campains_BR.Loop_BOARD_Ads.Q19BR[{" + stat.Name + "}]", "{_3}")
+            SubAxis.Elements["base"].IsHidden = True
+            SubAxis.Elements["_3"].Label = stat.Label
+            SubAxis.Label = ""
+    	Next
+    	Table.Filters.AddNew("f1"+ctext(j), "marker_"+ctr+"_BOARD_"+Category+"_Q19Filt*{"+ctext(j)+"}","Recognizers of at least one TP of the campaign","Loop_TV_Campains_"+Category+".Loop_BOARD_Ads")
+    	Table.level = "HDATA"
+    	Table.Weight = "Weight_" + category
+    '	Table.Rules.AddNew()
+	Next
+
+    TableDoc.Save("PopulateBefore.mtd")
+    TableDoc.Populate("t6654_Fast")
+    TableDoc.Save("PopulateAfter.mtd")
+    
+    With TableDoc.Exports["mrHtmlExport"]
+        .Properties["Interactive"] = False
+        .Properties["OverwriteOutput"] = True
+        .Properties["DisplayOption"] = "Table Only"
+        .Export("Output.html")
+    End With
+    

@@ -1,0 +1,13 @@
+{
+  "mycar": {
+    "color": "red",
+    "features": {
+      "automatic_windows": true,
+      "cup_holders": 2,
+      "cruise_control": false
+    },
+    "doors": 4,
+    "transmission": "automatic",
+    "make": "Lancer"
+  }
+}
